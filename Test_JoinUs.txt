@@ -1,0 +1,64 @@
+*** Settings ***
+Documentation     This Suite covers below scenarios:
+...
+...               1. reg information not input, system displayed the error msg
+...               2. reg information input, error msg hidden
+...               3. Email validation
+...               4. Dropdown list verification
+...               5. successfully signup an user acct
+Suite Setup       open browser    ${server}
+Suite Teardown    close browser
+Resource          resource.robot
+Library           Screenshot
+
+*** Test Cases ***
+TC01_JoinUS_BlankFieldCheck
+    [Documentation]    This test case is to test the validation function for user signup filed
+    [Tags]    run
+    Click link    Try it free
+    Set Selenium Implicit Wait    15
+    Click button    id=trial-button
+    Page Should Contain Element    id=id_first_name-error
+    Page Should Contain Element    id=id_last_name-error
+    Page Should Contain Element    id=id_email-error
+    Page Should Contain Element    id=id_password1-error
+    Take Screenshot    name=information_error
+
+TC02_JoinUS_EmailValidation
+    [Documentation]    This case is to verify the email address validation function with different invalid address
+    [Tags]    run
+    : FOR    ${i}    IN    @{invalid_email}
+    \    input text    id=id_email    ${i}
+    \    set focus to element    id=id_first_name
+    \    ${errormsg}    get text    id=id_email-error
+    \    log    email address = ${i}, error msg=${errormsg}
+
+TC03_JoinUS_ValidateDropDown
+    [Documentation]    This case is to test if dropdown list value is as design
+    [Tags]    debug
+    @{drop_down_value}=    get list items    id=id_referrer
+    : FOR    ${_value}    IN    @{drop_down_value}
+    \    log    Current Value of DropDown list is: ${_value}
+    \    list should contain value    ${channel}    ${_value}
+
+TC04_JoinUS_ErrorMsgHidden
+    Input text    id=id_first_name    fName
+    ${fnameerror}    Get Element Attribute    id=id_first_name-error    style
+    Should be equal as Strings    display: none;    ${fnameerror}
+    Input text    id=id_last_name    lName
+    ${lnameerror}    Get Element Attribute    id=id_last_name-error    style
+    Should be equal as Strings    display: none;    ${lnameerror}
+    Input text    id=id_email    28536414@qq.com
+    ${emailerror}    Get Element Attribute    id=id_email-error    style
+    Should be equal as Strings    display: none;    ${emailerror}
+    input password    id=id_password1    p@ssw0rd
+    ${passworderror}    Get Element Attribute    id=id_password1-error    style
+    Should be equal as Strings    display: none;    ${passworderror}
+    select from list by index    id=id_referrer    2
+    take screenshot    name = input_all_info
+    click button    id=trial-button
+    set selenium implicit wait    5
+    title should be    Get Started: Safari
+    page should contain    Welcome to Safari!
+
+*** Keywords ***
